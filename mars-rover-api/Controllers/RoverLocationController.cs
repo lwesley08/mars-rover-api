@@ -69,7 +69,7 @@ namespace mars_rover_api.Controllers
                     throw new Exception($"Rover #{roverInstructions.RoverId} does not have a location. Try setting starting location first.");
                 }
 
-                RoverLocation roverLocation = CalculateNewLocation(currentRoverLocation, roverInstructions.Instructions);
+                RoverLocation roverLocation = LocationUtility.CalculateNewLocation(currentRoverLocation, roverInstructions.Instructions);
 
                 bool validationResult = ValidateRoverLocation(roverLocation);
 
@@ -114,85 +114,6 @@ namespace mars_rover_api.Controllers
                 _logger.LogError(ex, $"Failure Rover Location History for Rover # {roverId}.");
                 return new BadRequestResult();
             }
-        }
-
-        private RoverLocation CalculateNewLocation(RoverLocation currentLocation, string instructions)
-        {
-            char[] instructionsAsCharArray = instructions?.ToCharArray();
-            RoverLocation newRoverLocation = new RoverLocation() { 
-                RoverId = currentLocation.RoverId, 
-                X = currentLocation.X,
-                Y = currentLocation.Y,
-                Z = currentLocation.Z,
-            };
-
-            foreach(char direction in instructionsAsCharArray)
-            {
-                switch (direction)
-                {
-                    case 'L':
-                        newRoverLocation.Z = TurnLeft(newRoverLocation.Z);
-                        break;
-                    case 'R':
-                        newRoverLocation.Z = TurnRight(newRoverLocation.Z);
-                        break;
-                    case 'M':
-                        newRoverLocation = MoveForward(newRoverLocation);
-                        break;
-                    default:
-                        throw new Exception($"Invalid instruction - { direction }.");
-                }
-            }
-
-            return newRoverLocation;
-        }
-
-        private char TurnLeft(char currentZ)
-        {
-            int currentDirectionIndex = Database.cardinalDirections.IndexOf(currentZ);
-            if (currentDirectionIndex == 0)
-            {
-                return Database.cardinalDirections.Last();
-            }
-            else
-            {
-                return Database.cardinalDirections[currentDirectionIndex - 1];
-            }
-        }
-        
-        private char TurnRight(char currentZ)
-        {
-            int currentDirectionIndex = Database.cardinalDirections.IndexOf(currentZ);
-            if (currentDirectionIndex == 3)
-            {
-                return Database.cardinalDirections.First();
-            }
-            else
-            {
-                return Database.cardinalDirections[currentDirectionIndex + 1];
-            }
-        }
-        
-        private RoverLocation MoveForward(RoverLocation roverLocation)
-        {
-            switch (roverLocation.Z)
-            {
-                case 'N':
-                    roverLocation.Y++;
-                    break;
-                case 'E':
-                    roverLocation.X++;
-                    break;
-                case 'S':
-                    roverLocation.Y--;
-                    break;
-                case 'W':
-                    roverLocation.X--;
-                    break;
-                default:
-                    throw new Exception($"Invalid instruction.");
-            }
-            return roverLocation;
         }
 
         private bool ValidateRoverLocation(RoverLocation roverLocation)

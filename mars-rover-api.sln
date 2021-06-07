@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31229.75
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mars-rover-api", "mars-rover-api\mars-rover-api.csproj", "{46E25D6F-BFD1-4328-A579-CC9F87FCAFCF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mars-rover-api", "mars-rover-api\mars-rover-api.csproj", "{46E25D6F-BFD1-4328-A579-CC9F87FCAFCF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mars-rover-api-test", "mars-rover-api-test\mars-rover-api-test.csproj", "{C96918BF-08C8-46D4-BE13-8878A2345F62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{46E25D6F-BFD1-4328-A579-CC9F87FCAFCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46E25D6F-BFD1-4328-A579-CC9F87FCAFCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46E25D6F-BFD1-4328-A579-CC9F87FCAFCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C96918BF-08C8-46D4-BE13-8878A2345F62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C96918BF-08C8-46D4-BE13-8878A2345F62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C96918BF-08C8-46D4-BE13-8878A2345F62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C96918BF-08C8-46D4-BE13-8878A2345F62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
