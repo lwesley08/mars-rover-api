@@ -6,10 +6,5 @@ namespace mars_rover_api.Models
     {
         public int X { get; set; }
         public int Y { get; set; }
-
-        internal object FirstOrDefault()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

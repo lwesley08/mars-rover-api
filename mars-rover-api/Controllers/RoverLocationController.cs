@@ -75,7 +75,7 @@ namespace mars_rover_api.Controllers
 
                 if (validationResult == false)
                 {
-                    throw new Exception("Instructions for Rover #{roverInstructions.RoverId} out of bounds or bounds not set.");
+                    throw new Exception($"Instructions for Rover #{roverInstructions.RoverId} out of bounds or bounds not set.");
                 }
 
                 roverLocation.CreateDate = DateTime.Now;
