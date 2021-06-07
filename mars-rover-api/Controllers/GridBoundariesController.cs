@@ -1,5 +1,6 @@
 ﻿using mars_rover_api.Data;
 using mars_rover_api.Models;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -7,7 +8,9 @@ using System;
 namespace mars_rover_api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Produces("application/json")]
+    [Route("GridBoundaries")]
+    [EnableCors("AllowAll")]
     public class GridBoundariesController : ControllerBase
     {
         private readonly ILogger<GridBoundariesController> _logger;
@@ -15,26 +18,6 @@ namespace mars_rover_api.Controllers
         public GridBoundariesController(ILogger<GridBoundariesController> logger)
         {
             _logger = logger;
-        }
-
-        [HttpGet]
-        public ActionResult<GridBoundaries> GetGridBoundaries()
-        {
-            try
-            {
-                _logger.LogInformation("Retrieving Grid Boundaries.");
-
-                GridBoundaries gridBoundaries = Database.gridBoundaries;
-
-                _logger.LogInformation("Successfully Retrieved Grid Boundaries.");
-
-                return gridBoundaries;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failure Retriving Grid Boundaries");
-                return new BadRequestResult();
-            }
         }
 
         [HttpPost]

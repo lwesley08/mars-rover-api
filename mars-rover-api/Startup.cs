@@ -26,6 +26,12 @@ namespace mars_rover_api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddCors(o => o.AddPolicy("AllowAll", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,6 +45,8 @@ namespace mars_rover_api
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            
+            app.UseCors("AllowAll");
 
             app.UseAuthorization();
 

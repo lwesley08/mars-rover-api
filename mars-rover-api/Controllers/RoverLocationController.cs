@@ -1,5 +1,6 @@
 ﻿using mars_rover_api.Data;
 using mars_rover_api.Models;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,7 +10,9 @@ using System.Linq;
 namespace mars_rover_api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Produces("application/json")]
+    [Route("RoverLocation")]
+    [EnableCors("AllowAll")]
     public class RoverLocationController : ControllerBase
     {
         private readonly ILogger<RoverLocationController> _logger;
@@ -19,29 +22,79 @@ namespace mars_rover_api.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
-        [Route("{roverId}")]
-        public ActionResult<RoverLocation> GetLastRoverLocation(int roverId)
+        [HttpPost]
+        [Route("SetStartingLocation")]
+        public ActionResult<RoverLocation> SetRoverStartingLocation([FromBody]RoverLocation roverLocation)
         {
             try
             {
-                _logger.LogInformation($"Retrieving Last Rover Location for Rover # {roverId}.");
+                _logger.LogInformation($"Setting Rover Starting Location for Rover # {roverLocation.RoverId}.");
+                
+                bool validationResult = ValidateRoverLocation(roverLocation);
 
-                RoverLocation roverLocation = Database.roverLocations?.Where(x => x.RoverId == roverId)?.OrderByDescending(x => x.CreateDate)?.First();
+                if (validationResult == false)
+                {
+                    throw new Exception($"Starting Location for Rover #{roverLocation.RoverId} out of bounds or bounds not set.");
+                }
 
-                _logger.LogInformation($"Successfully Last Rover Location for Rover # {roverId}.");
+                roverLocation.CreateDate = DateTime.Now;
+
+                Database.roverLocations.Add(roverLocation);
+
+                _logger.LogInformation($"Sucessfully Set Rover Starting Location for Rover # {roverLocation.RoverId}.");
 
                 return roverLocation;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failure Last Rover Location for Rover # {roverId}.");
+                _logger.LogError(ex, $"Failure Setting Rover Starting Location for Rover # {roverLocation.RoverId}.");
                 return new BadRequestResult();
             }
         }
         
+        [HttpPost]
+        [Route("Instruct")]
+        public ActionResult<RoverLocation> InstructRover([FromBody]RoverInstructions roverInstructions)
+        {
+            try
+            {
+                _logger.LogInformation($"Instructing Rover #{roverInstructions.RoverId}.");
+
+                RoverLocation currentRoverLocation = Database.roverLocations?.Where(x => x.RoverId == roverInstructions.RoverId)
+                                                                            ?.OrderByDescending(x => x.CreateDate)
+                                                                            ?.FirstOrDefault();
+                
+                if (currentRoverLocation == null)
+                {
+                    throw new Exception($"Rover #{roverInstructions.RoverId} does not have a location. Try setting starting location first.");
+                }
+
+                RoverLocation roverLocation = CalculateNewLocation(currentRoverLocation, roverInstructions.Instructions);
+
+                bool validationResult = ValidateRoverLocation(roverLocation);
+
+                if (validationResult == false)
+                {
+                    throw new Exception("Instructions for Rover #{roverInstructions.RoverId} out of bounds or bounds not set.");
+                }
+
+                roverLocation.CreateDate = DateTime.Now;
+
+                Database.roverLocations.Add(roverLocation);
+
+                _logger.LogInformation($"Sucessfully Set Rover Starting Location for Rover # {roverLocation.RoverId}.");
+
+                return roverLocation;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failure Setting Rover Starting Location for Rover # {roverInstructions.RoverId}.");
+                return new BadRequestResult();
+            }
+        }
+
         [HttpGet]
-        [Route("{roverId}")]
+        [Route("GetLocationHistory/{roverId}")]
         public ActionResult<List<RoverLocation>> GetRoverLocationHistory(int roverId)
         {
             try
@@ -59,80 +112,6 @@ namespace mars_rover_api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failure Rover Location History for Rover # {roverId}.");
-                return new BadRequestResult();
-            }
-        }
-
-        [HttpPost]
-        public ActionResult<RoverLocation> SetRoverStartingLocation([FromBody]RoverLocation roverLocation)
-        {
-            try
-            {
-                _logger.LogInformation($"Setting Rover Starting Location for Rover # {roverLocation.RoverId}.");
-
-                RoverLocation dbRoverLocation = Database.roverLocations
-                                                        ?.Where(x => x.RoverId == roverLocation.RoverId)
-                                                        ?.FirstOrDefault();
-                
-                if (dbRoverLocation != null)
-                {
-                    return new BadRequestObjectResult(new { Value = $"Rover #{roverLocation.RoverId} already has a location. Try moving rover instead." });
-                }
-
-                bool validationResult = ValidateRoverLocation(roverLocation);
-
-                if (validationResult == false)
-                {
-                    return new BadRequestObjectResult(new { Value = $"Starting Location for Rover #{roverLocation.RoverId} out of bounds or bounds not set." });
-                }
-
-                Database.roverLocations.Add(roverLocation);
-
-                _logger.LogInformation($"Sucessfully Set Rover Starting Location for Rover # {roverLocation.RoverId}.");
-
-                return roverLocation;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failure Setting Rover Starting Location for Rover # {roverLocation.RoverId}.");
-                return new BadRequestResult();
-            }
-        }
-        
-        [HttpPost]
-        public ActionResult<RoverLocation> InstructRover([FromBody]RoverInstructions roverInstructions)
-        {
-            try
-            {
-                _logger.LogInformation($"Instructing Rover #{roverInstructions.RoverId}.");
-
-                RoverLocation currentRoverLocation = Database.roverLocations?.Where(x => x.RoverId == roverInstructions.RoverId)
-                                                                            ?.OrderByDescending(x => x.CreateDate)
-                                                                            ?.FirstOrDefault();
-                
-                if (currentRoverLocation == null)
-                {
-                    return new BadRequestObjectResult(new { Value = $"Rover #{roverInstructions.RoverId} does not have a location. Try setting starting location first." });
-                }
-
-                RoverLocation roverLocation = CalculateNewLocation(currentRoverLocation, roverInstructions.Instructions);
-
-                bool validationResult = ValidateRoverLocation(roverLocation);
-
-                if (validationResult == false)
-                {
-                    return new BadRequestObjectResult(new { Value = $"Instructions for Rover #{roverInstructions.RoverId} out of bounds or bounds not set." });
-                }
-
-                Database.roverLocations.Add(roverLocation);
-
-                _logger.LogInformation($"Sucessfully Set Rover Starting Location for Rover # {roverLocation.RoverId}.");
-
-                return roverLocation;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failure Setting Rover Starting Location for Rover # {roverInstructions.RoverId}.");
                 return new BadRequestResult();
             }
         }
@@ -184,7 +163,7 @@ namespace mars_rover_api.Controllers
         private char TurnRight(char currentZ)
         {
             int currentDirectionIndex = Database.cardinalDirections.IndexOf(currentZ);
-            if (currentDirectionIndex == 4)
+            if (currentDirectionIndex == 3)
             {
                 return Database.cardinalDirections.First();
             }
